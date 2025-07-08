@@ -13,7 +13,7 @@
             "name": "Discovery Design"
         }
     ],
-    "minimum-stability": "dev",
+    "minimum-stability": "beta",
     "require": {
         "filament/filament": "^3.0|^4.0",
         "spatie/laravel-package-tools": "^1.15.0"
