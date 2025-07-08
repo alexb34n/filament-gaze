@@ -5,7 +5,7 @@ namespace DiscoveryDesign\FilamentGaze\Forms\Components;
 use Carbon\Carbon;
 use Closure;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\Component;
+use Filament\Schemas\Components\Component;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -87,17 +87,6 @@ class GazeBanner extends Component
     {
         $this->isLockable = (bool) $this->evaluate($fnc);
 
-        if ($this->isLockable) {
-            $this->registerListeners([
-                'FilamentGaze::takeControl' => [
-                    function () {
-                        $this->refreshForm();
-                        $this->takeControl();
-                    },
-                ],
-            ]);
-        }
-
         return $this;
     }
 
@@ -161,7 +150,7 @@ class GazeBanner extends Component
 	    $record = $this->getRecord();
 
 	    if ($record) {
-            $this->getLivewire()->mount($record->{$record->getRouteKeyName()});
+            $this->getLivewire()->mount();
 	    }
     }
 
@@ -175,14 +164,6 @@ class GazeBanner extends Component
      */
     public function refreshViewers()
     {
-        $this->registerListeners([
-            'FilamentGaze::takeControl' => [
-                function () {
-                    $this->refreshViewers();
-                },
-            ],
-        ]);
-
         $identifier = $this->getIdentifier();
         $authGuard = Filament::getCurrentPanel()->getAuthGuard();
 
