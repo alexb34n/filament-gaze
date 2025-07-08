@@ -1,7 +1,7 @@
 <div
     class="gaze-banner @if($show) gaze-banner--has-content @endif"
     x-data="{}"
-    wire:poll.keep-alive.{{ $pollTimer }}s="dispatchFormEvent('FilamentGaze::refreshViewers')"
+    wire:poll.keep-alive.{{ $pollTimer }}s="$refresh"
 >
     @if($show)
         <div>
@@ -38,7 +38,7 @@
                     </div>
 
                     @if($isLockable && !$hasControl && $canTakeControl)
-                        <x-filament::button class="my-auto mt-2 md:mt-0" color="primary" wire:click="dispatchFormEvent('FilamentGaze::takeControl')">
+                        <x-filament::button class="my-auto mt-2 md:mt-0" color="primary" wire:click="$dispatch('FilamentGaze::takeControl')">
                             {{ __('filament-gaze::gaze.lock_take_control') }}
                         </x-filament::button>
                     @endif
