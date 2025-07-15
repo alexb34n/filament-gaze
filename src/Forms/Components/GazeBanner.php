@@ -147,11 +147,27 @@ class GazeBanner extends Component
     public function refreshForm()
     {
         // Very hacky, maybe a better solution for this?
-	    $record = $this->getRecord();
+        $record = $this->getRecord();
 
-	    if ($record) {
-            $this->getLivewire()->mount();
-	    }
+        if ($record) {
+            $livewire = $this->getLivewire();
+            
+            try {
+                // Check if we're on an EditRecord page that needs a record ID
+                $reflectionMethod = new \ReflectionMethod(get_class($livewire), 'mount');
+                $parameters = $reflectionMethod->getParameters();
+                
+                if (count($parameters) === 1) {
+                    // For EditRecord pages that expect a record ID
+                    $livewire->mount($record->getKey());
+                } else {
+                    // For other pages with no required parameters
+                    $livewire->mount();
+                }
+            } catch (\Exception $e) {
+                // If reflection fails or mount causes issues, try to continue silently
+            }
+        }
     }
 
     /**
@@ -272,11 +288,25 @@ class GazeBanner extends Component
         $hasControl = isset($lockUser) && $lockUser['id'] == auth()->guard($authGuard)->id();
 
         if ($this->isLockable) {
-            if($form = $this->getLivewire()->getForm('form')){
-                $form->disabled(! $hasControl);
-            }
-            if($childForm = $this->getLivewire()->getForm('mountedTableActionForm')){
-                $childForm->disabled(! $hasControl);
+            try {
+                $livewire = $this->getLivewire();
+                
+                if (method_exists($livewire, 'getForm')) {
+                    if ($form = $livewire->getForm('form')) {
+                        if (method_exists($form, 'disabled')) {
+                            $form->disabled(! $hasControl);
+                        }
+                    }
+                    
+                    if ($childForm = $livewire->getForm('mountedTableActionForm')) {
+                        if (method_exists($childForm, 'disabled')) {
+                            $childForm->disabled(! $hasControl);
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Silently fail - don't break the component if form control fails
+                // You could add logging here if needed
             }
         }
 
