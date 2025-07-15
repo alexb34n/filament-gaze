@@ -31,7 +31,7 @@ class GazeBanner extends Component
     /**
      * The poll timer for refreshing the list of viewers.
      */
-    public string | int $pollTimer = 10;
+    public string|int $pollTimer = 10;
 
     /**
      * Whether the lockable trait has been enabled.
@@ -46,7 +46,7 @@ class GazeBanner extends Component
     /**
      * Create a new instance of the GazeBanner component.
      */
-    public static function make(array | Closure $schema = []): static
+    public static function make(array|Closure $schema = []): static
     {
         $static = app(static::class, ['schema' => $schema]);
         $static->configure();
@@ -60,7 +60,7 @@ class GazeBanner extends Component
      * @param  string  $identifier
      * @return $this
      */
-    public function identifier(string | Closure $fnc = ''): static
+    public function identifier(string|Closure $fnc = ''): static
     {
         $this->identifier = (string) $this->evaluate($fnc);
 
@@ -83,7 +83,7 @@ class GazeBanner extends Component
     /**
      * Set the lock state
      */
-    public function lock(bool | Closure $fnc = true): static
+    public function lock(bool|Closure $fnc = true): static
     {
         $this->isLockable = (bool) $this->evaluate($fnc);
 
@@ -96,7 +96,7 @@ class GazeBanner extends Component
 
     public function hideOnCreate(): static
     {
-        $this->hidden(fn ($record) => $record === null);
+        $this->hidden(fn($record) => $record === null);
 
         return $this;
     }
@@ -104,7 +104,7 @@ class GazeBanner extends Component
     /**
      * Set the take control state
      */
-    public function canTakeControl(bool | Closure $fnc = true): static
+    public function canTakeControl(bool|Closure $fnc = true): static
     {
         $this->canTakeControl = (bool) $this->evaluate($fnc);
 
@@ -132,9 +132,9 @@ class GazeBanner extends Component
 
     public function getIdentifier()
     {
-        if (! $this->identifier) {
+        if (!$this->identifier) {
             $record = $this->getRecord();
-            if (! $record) {
+            if (!$record) {
                 $this->identifier = (string) $this->getModel();
             } else {
                 $this->identifier = get_class($record) . '-' . $record->id;
@@ -151,12 +151,12 @@ class GazeBanner extends Component
 
         if ($record) {
             $livewire = $this->getLivewire();
-            
+
             try {
                 // Check if we're on an EditRecord page that needs a record ID
                 $reflectionMethod = new \ReflectionMethod(get_class($livewire), 'mount');
                 $parameters = $reflectionMethod->getParameters();
-                
+
                 if (count($parameters) === 1) {
                     // For EditRecord pages that expect a record ID
                     $livewire->mount($record->getKey());
@@ -228,7 +228,7 @@ class GazeBanner extends Component
 
         // If no one has lock state, give it to the first person.
         // Annoyingly the table isn't sorted so we can't just grab the first person.
-        if ($this->isLockable && ! $someoneHasLockState) {
+        if ($this->isLockable && !$someoneHasLockState) {
             foreach ($curViewers as $key => $viewer) {
                 $curViewers[$key]['has_control'] = true;
 
@@ -290,23 +290,35 @@ class GazeBanner extends Component
         if ($this->isLockable) {
             try {
                 $livewire = $this->getLivewire();
-                
-                if (method_exists($livewire, 'getForm')) {
+
+                // Check for Filament 4 form access patterns
+                if (property_exists($livewire, 'form') && method_exists($livewire->form, 'disabled')) {
+                    $livewire->form->disabled(!$hasControl);
+                }
+                // Try Filament 3 method as fallback
+                elseif (method_exists($livewire, 'getForm')) {
                     if ($form = $livewire->getForm('form')) {
                         if (method_exists($form, 'disabled')) {
-                            $form->disabled(! $hasControl);
+                            $form->disabled(!$hasControl);
                         }
                     }
-                    
+
                     if ($childForm = $livewire->getForm('mountedTableActionForm')) {
                         if (method_exists($childForm, 'disabled')) {
-                            $childForm->disabled(! $hasControl);
+                            $childForm->disabled(!$hasControl);
                         }
                     }
                 }
+
+                // Handle action panels in Filament 4
+                if (
+                    property_exists($livewire, 'mountedTableActionForm') &&
+                    method_exists($livewire->mountedTableActionForm, 'disabled')
+                ) {
+                    $livewire->mountedTableActionForm->disabled(!$hasControl);
+                }
             } catch (\Exception $e) {
-                // Silently fail - don't break the component if form control fails
-                // You could add logging here if needed
+                // Silently fail to prevent breaking the component
             }
         }
 
