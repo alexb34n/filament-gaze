@@ -1,5 +1,5 @@
 {
-    "name": "discoverydesign/filament-gaze",
+    "name": "alexb34n/filament-gaze",
     "description": "See who's viewing a resource in Filament PHP.",
     "type": "library",
     "license": "MIT",
