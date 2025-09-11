@@ -150,7 +150,7 @@ class GazeBanner extends Component
 	    $record = $this->getRecord();
 
 	    if ($record) {
-            $this->getLivewire()->mount();
+            $this->getLivewire()->mount($record->id);
 	    }
     }
 
