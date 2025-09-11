@@ -272,7 +272,7 @@ class GazeBanner extends Component
         $hasControl = isset($lockUser) && $lockUser['id'] == auth()->guard($authGuard)->id();
 
         if ($this->isLockable) {
-            if($form = $this->getLivewire()->getForm('form')){
+            if($form = $this->getLivewire()->getSchema('form')){
                 $form->disabled(! $hasControl);
             }
             if($childForm = $this->getLivewire()->getSchema('mountedTableActionForm')){
