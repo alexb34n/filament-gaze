@@ -275,7 +275,7 @@ class GazeBanner extends Component
             if($form = $this->getLivewire()->getForm('form')){
                 $form->disabled(! $hasControl);
             }
-            if($childForm = $this->getLivewire()->getForm('mountedTableActionForm')){
+            if($childForm = $this->getLivewire()->getSchema('mountedTableActionForm')){
                 $childForm->disabled(! $hasControl);
             }
         }
